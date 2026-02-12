@@ -29,6 +29,14 @@
       --radius: 16px;
       --primary:#0b1220;
       --danger:#b91c1c;
+      /* FIX DEFINITIVO: evita que el CSS global “rompa” los tiles de Leaflet */
+.leaflet-container img.leaflet-tile{
+  max-width: none !important;
+  max-height: none !important;
+  width: 256px !important;
+  height: 256px !important;
+}
+
     }
 
     html, body { height: 100%; }
@@ -614,3 +622,4 @@
   </script>
 </body>
 </html>
+
