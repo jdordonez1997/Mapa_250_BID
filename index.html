@@ -153,14 +153,17 @@
       min-width:0;
     }
     .muted{ color:var(--muted); }
-    #map{
-      border-radius: var(--radius);
-      border:1px solid var(--border);
-      box-shadow: var(--shadow);
-      overflow:hidden;
-      min-width:0;
-    }
-
+    
+#map{
+  height: calc(100vh - 24px);  /* 100% alto de pantalla menos el padding del .app */
+  width: 100%;
+  border-radius: var(--radius);
+  border:1px solid var(--border);
+  box-shadow: var(--shadow);
+  overflow:hidden;
+  min-width:0;
+}
+html, body { height: 100%; }
     .detail{
       padding:14px;
     }
@@ -598,4 +601,5 @@
     });
   </script>
 </body>
+
 </html>
