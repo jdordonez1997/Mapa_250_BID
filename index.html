@@ -14,7 +14,7 @@
   />
   <script
     src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-    integrity="sha256-20nQCchB9co0qIjQJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
     crossorigin=""
   ></script>
 
@@ -28,11 +28,12 @@
       --shadow: 0 10px 30px rgba(2,6,23,.08);
       --radius: 16px;
       --primary:#0b1220;
+      --danger:#b91c1c;
     }
 
     html, body { height: 100%; }
-
     *{ box-sizing:border-box; }
+
     body{
       margin:0;
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
@@ -44,7 +45,7 @@
       height:100vh;
       display:grid;
       grid-template-columns: 340px 1fr 360px;
-      grid-template-rows: 1fr; /* importante en grid */
+      grid-template-rows: 1fr;
       gap:12px;
       padding:12px;
       align-items: stretch;
@@ -59,7 +60,7 @@
       display:flex;
       flex-direction:column;
       min-width: 0;
-      min-height: 0; /* clave en grid */
+      min-height: 0;
     }
 
     .panel-header{
@@ -84,6 +85,7 @@
       font-size:20px;
       letter-spacing:.2px;
       font-weight:900;
+      text-transform: uppercase;
     }
 
     .sub{
@@ -96,7 +98,7 @@
     .panel-body{
       padding:12px 14px;
       overflow:auto;
-      min-height: 0;
+      min-height:0;
     }
 
     label{
@@ -115,7 +117,6 @@
       background:#fff;
       font-size:13px;
     }
-    select:focus, input:focus{ border-color:#94a3b8; }
 
     .btn{
       width:100%;
@@ -139,7 +140,6 @@
       border:1px dashed var(--border);
       border-radius:12px;
       font-size:12.5px;
-      color:var(--text);
       line-height:1.45;
     }
 
@@ -164,45 +164,63 @@
       font-size:12.5px;
     }
     .legend-item:last-child{ border-bottom:none; }
-
-    .legend-left{
-      display:flex;
-      align-items:center;
-      gap:8px;
-      min-width:0;
-    }
-    .swatch{
-      width:12px;height:12px;border-radius:50%;
-      border:1px solid rgba(0,0,0,.18);
-      flex:0 0 auto;
-    }
+    .legend-left{ display:flex; align-items:center; gap:8px; min-width:0; }
+    .swatch{ width:12px;height:12px;border-radius:50%; border:1px solid rgba(0,0,0,.18); }
     .muted{ color:var(--muted); }
 
-    /* MAP: CLAVE para Leaflet en CSS Grid */
+    /* MAP (clave para que no se rompan los tiles) */
     #map{
       height: 100%;
       width: 100%;
-      min-height: 0;
-      min-width: 0;
+      min-height:0;
+      min-width:0;
       border-radius: var(--radius);
       border:1px solid var(--border);
       box-shadow: var(--shadow);
       overflow:hidden;
+      background:#e5e7eb;
+      position:relative;
+    }
+
+    /* Diagnóstico si falla el GeoJSON */
+    .diag{
+      position:absolute;
+      inset:10px;
+      pointer-events:none;
+      display:none;
+    }
+    .diag.show{ display:block; }
+    .diag .box{
+      pointer-events:auto;
+      background:#fff;
+      border:1px solid #fecaca;
+      border-left:6px solid var(--danger);
+      border-radius:12px;
+      box-shadow: var(--shadow);
+      padding:12px;
+      max-width: 520px;
+      font-size:13px;
+      line-height:1.35;
+    }
+    .diag .title{
+      font-weight:900;
+      margin-bottom:6px;
+      color:#7f1d1d;
+    }
+    .diag code{
+      display:block;
+      white-space:pre-wrap;
+      background:#0b1220;
+      color:#fff;
+      padding:8px;
+      border-radius:10px;
+      margin-top:8px;
+      font-size:12px;
     }
 
     .detail{ padding:14px; }
-    .detail h2{
-      margin:0 0 8px;
-      font-size:15px;
-      font-weight:900;
-      letter-spacing:.2px;
-    }
-    .detail .hint{
-      margin:0 0 12px;
-      color:var(--muted);
-      font-size:12.5px;
-      line-height:1.35;
-    }
+    .detail h2{ margin:0 0 8px; font-size:15px; font-weight:900; letter-spacing:.2px; }
+    .detail .hint{ margin:0 0 12px; color:var(--muted); font-size:12.5px; }
 
     .card{
       border:1px solid var(--border);
@@ -210,7 +228,6 @@
       padding:12px;
       background:#fff;
     }
-
     .row{
       display:grid;
       grid-template-columns: 160px 1fr;
@@ -222,23 +239,14 @@
     }
     .row:last-child{ border-bottom:none; }
     .k{ color:var(--muted); font-weight:800; }
-    .v{ font-weight:800; color:var(--text); word-break:break-word; }
+    .v{ font-weight:800; word-break:break-word; }
 
-    .actions{
-      display:flex;
-      gap:10px;
-      margin-top:12px;
-    }
+    .actions{ display:flex; gap:10px; margin-top:12px; }
     .actions .btn{ margin-top:0; }
 
     @media (max-width: 1100px){
-      .app{
-        grid-template-columns: 1fr;
-        grid-template-rows: auto 55vh auto;
-      }
-      #map{
-        height:55vh;
-      }
+      .app{ grid-template-columns: 1fr; grid-template-rows: auto 55vh auto; }
+      #map{ height:55vh; }
     }
   </style>
 </head>
@@ -246,7 +254,7 @@
 <body>
   <div class="app">
 
-    <!-- LEFT PANEL -->
+    <!-- LEFT -->
     <aside class="panel">
       <div class="panel-header">
         <div class="brand">
@@ -271,7 +279,7 @@
 
         <button class="btn" id="btnLimpiar">Limpiar</button>
 
-        <div class="stats" id="statsBox">
+        <div class="stats">
           <div><b>Total:</b> <span id="totalAll">0</span></div>
           <div><b>Mostrando:</b> <span id="totalShown">0</span></div>
           <div class="muted" style="margin-top:6px">
@@ -282,7 +290,7 @@
           </div>
         </div>
 
-        <div class="legend" id="legendBox">
+        <div class="legend">
           <div class="legend-title">Leyenda (GRUPOS)</div>
           <div id="legendItems"></div>
         </div>
@@ -294,9 +302,17 @@
     </aside>
 
     <!-- MAP -->
-    <main id="map"></main>
+    <main id="map">
+      <div class="diag" id="diag">
+        <div class="box">
+          <div class="title">No se pudo cargar el GeoJSON</div>
+          <div id="diagMsg"></div>
+          <code id="diagCode"></code>
+        </div>
+      </div>
+    </main>
 
-    <!-- RIGHT PANEL -->
+    <!-- RIGHT -->
     <aside class="panel">
       <div class="detail">
         <h2>DETALLE DEL BENEFICIARIO</h2>
@@ -316,17 +332,14 @@
   </div>
 
   <script>
-    // =====================
-    // Config
-    // =====================
-    const GEOJSON_URL = "250_BID.geojson";
+    // Nombres reales en tu repo (según tu captura)
+    const GEOJSON_URL = "./250_BID.geojson";
 
     const PALETTE = [
       "#ef4444","#3b82f6","#10b981","#a855f7","#f59e0b",
       "#06b6d4","#f43f5e","#22c55e","#6366f1","#84cc16"
     ];
 
-    // Campos QGIS -> Etiquetas UI
     const FIELD_LABELS = [
       ["CI", "CI"],
       ["NOMBRES", "NOMBRES"],
@@ -338,65 +351,44 @@
       ["Grupos", "GRUPOS"]
     ];
 
-    // =====================
-    // Estado
-    // =====================
     let map;
     let allFeatures = [];
     let layerGroup = L.layerGroup();
     let groupColor = {};
     let selected = null;
 
-    // =====================
-    // Utils
-    // =====================
     const norm = (v) => (v ?? "").toString().trim().toUpperCase().replace(/\s+/g," ");
+    const uniqSorted = (arr) => [...new Set(arr)].filter(x=>x!=="").sort((a,b)=>a.localeCompare(b,'es'));
+    const getProp = (f, k) => (f.properties ? f.properties[k] : undefined);
 
-    function uniqSorted(arr){
-      return [...new Set(arr)].filter(x => x !== "").sort((a,b)=>a.localeCompare(b,'es'));
-    }
-
-    function setSelectOptions(sel, values, allLabel="(Todas)"){
+    function setSelectOptions(sel, values, allLabel){
       sel.innerHTML = "";
       const optAll = document.createElement("option");
       optAll.value = "";
       optAll.textContent = allLabel;
       sel.appendChild(optAll);
       values.forEach(v=>{
-        const o=document.createElement("option");
-        o.value=v;
-        o.textContent=v;
+        const o = document.createElement("option");
+        o.value = v;
+        o.textContent = v;
         sel.appendChild(o);
       });
     }
 
-    function getProp(f, key){
-      return f.properties ? f.properties[key] : undefined;
-    }
-
     function computeGroupPalette(groups){
       groupColor = {};
-      groups.forEach((g,i)=>{
-        groupColor[g] = PALETTE[i % PALETTE.length];
-      });
+      groups.forEach((g,i)=> groupColor[g] = PALETTE[i % PALETTE.length]);
     }
 
     function markerStyleFor(feature){
       const g = norm(getProp(feature, "Grupos"));
       const color = groupColor[g] || "#64748b";
-      return {
-        radius: 6,
-        fillColor: color,
-        color: "rgba(0,0,0,.35)",
-        weight: 1,
-        fillOpacity: 0.9
-      };
+      return { radius: 6, fillColor: color, color: "rgba(0,0,0,.35)", weight: 1, fillOpacity: 0.9 };
     }
 
     function buildDetail(feature){
       const card = document.getElementById("detailCard");
       card.innerHTML = "";
-
       FIELD_LABELS.forEach(([field, label])=>{
         const val = getProp(feature, field);
         const row = document.createElement("div");
@@ -429,7 +421,6 @@
       });
 
       const groups = Object.keys(counts).sort((a,b)=>a.localeCompare(b,'es'));
-
       const container = document.getElementById("legendItems");
       container.innerHTML = "";
 
@@ -440,9 +431,7 @@
         div.innerHTML = `
           <div class="legend-left" title="${g}">
             <span class="swatch" style="background:${c}"></span>
-            <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:190px;">
-              ${g}
-            </span>
+            <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:190px;">${g}</span>
           </div>
           <div class="muted" style="font-weight:900;">${counts[g]}</div>
         `;
@@ -460,18 +449,35 @@
         .filter(Boolean);
 
       const cantonesUniq = uniqSorted(cantones);
-
       const sel = document.getElementById("selCanton");
       setSelectOptions(sel, cantonesUniq, "(Todos)");
-
-      if (cantSel && cantonesUniq.includes(cantSel)){
-        sel.value = cantSel;
-      }
+      if (cantSel && cantonesUniq.includes(cantSel)) sel.value = cantSel;
     }
 
-    // =====================
-    // Filtros
-    // =====================
+    function clearSelection(){
+      if (selected && selected.marker){
+        selected.marker.setStyle(markerStyleFor(selected.feature));
+      }
+      selected = null;
+
+      document.getElementById("detailCard").innerHTML =
+        `<div class="muted" style="font-size:13px;">—</div>`;
+      document.getElementById("btnCentrar").disabled = true;
+      document.getElementById("btnQuitar").disabled = true;
+    }
+
+    function onSelect(feature, marker){
+      if (selected && selected.marker){
+        selected.marker.setStyle(markerStyleFor(selected.feature));
+      }
+      selected = { feature, marker };
+      marker.setStyle({ radius: 9, weight: 2 });
+
+      buildDetail(feature);
+      document.getElementById("btnCentrar").disabled = false;
+      document.getElementById("btnQuitar").disabled = false;
+    }
+
     function applyFilters(){
       const prov = norm(document.getElementById("selProvincia").value);
       const cant = norm(document.getElementById("selCanton").value);
@@ -479,19 +485,16 @@
       const q    = norm(document.getElementById("txtBuscar").value);
 
       const filtered = allFeatures.filter(f=>{
-        const fp = norm(getProp(f,"PROVINCIA"));
-        const fc = norm(getProp(f,"CANTON"));
-        const fg = norm(getProp(f,"Grupos"));
+        const fp  = norm(getProp(f,"PROVINCIA"));
+        const fc  = norm(getProp(f,"CANTON"));
+        const fg  = norm(getProp(f,"Grupos"));
         const fci = norm(getProp(f,"CI"));
         const fn  = norm(getProp(f,"NOMBRES"));
 
         if (prov && fp !== prov) return false;
         if (cant && fc !== cant) return false;
         if (grp  && fg !== grp)  return false;
-
-        if (q){
-          if (!(fci.includes(q) || fn.includes(q))) return false;
-        }
+        if (q && !(fci.includes(q) || fn.includes(q))) return false;
         return true;
       });
 
@@ -503,65 +506,40 @@
           m.on("click", () => onSelect(feature, m));
           return m;
         }
-      });
-
-      geoLayer.addTo(layerGroup);
+      }).addTo(layerGroup);
 
       updateStats(filtered.length);
       buildLegend(filtered);
       rebuildCantonOptions();
 
-      if (selected){
-        const stillThere = filtered.includes(selected.feature);
-        if (!stillThere) clearSelection();
-      }
+      if (selected && !filtered.includes(selected.feature)) clearSelection();
 
       if (filtered.length > 0 && !map._hasFitOnce){
         map.fitBounds(geoLayer.getBounds(), { padding:[30,30] });
         map._hasFitOnce = true;
-        setTimeout(() => map.invalidateSize(true), 200);
       }
 
-      setTimeout(() => map.invalidateSize(true), 200);
+      requestAnimationFrame(() => map.invalidateSize(true));
+      setTimeout(() => map.invalidateSize(true), 250);
     }
 
-    // =====================
-    // Selección
-    // =====================
-    function onSelect(feature, marker){
-      if (selected && selected.marker){
-        selected.marker.setStyle(markerStyleFor(selected.feature));
-      }
-
-      selected = { feature, marker };
-      marker.setStyle({ radius: 9, weight: 2 });
-
-      buildDetail(feature);
-
-      document.getElementById("btnCentrar").disabled = false;
-      document.getElementById("btnQuitar").disabled = false;
+    function showDiag(message){
+      const diag = document.getElementById("diag");
+      const msg = document.getElementById("diagMsg");
+      const code = document.getElementById("diagCode");
+      msg.innerHTML = `<div><b>Motivo:</b> ${message}</div>`;
+      code.textContent =
+        "Verifica estos nombres en tu repo:\n" +
+        "- index.html (ojo, no index.html1)\n" +
+        "- 250_BID.geojson\n" +
+        "- logo_institucional.jpg\n\n" +
+        "Ruta usada para el GeoJSON:\n" + GEOJSON_URL;
+      diag.classList.add("show");
     }
 
-    function clearSelection(){
-      if (selected && selected.marker){
-        selected.marker.setStyle(markerStyleFor(selected.feature));
-      }
-      selected = null;
-
-      document.getElementById("detailCard").innerHTML =
-        `<div class="muted" style="font-size:13px;">—</div>`;
-
-      document.getElementById("btnCentrar").disabled = true;
-      document.getElementById("btnQuitar").disabled = true;
-    }
-
-    // =====================
-    // Init
-    // =====================
     async function init(){
       map = L.map("map", { zoomControl: true });
 
-      // Fix robusto para CSS Grid / tamaños
       requestAnimationFrame(() => map.invalidateSize(true));
       setTimeout(() => map.invalidateSize(true), 300);
       window.addEventListener("resize", () => map.invalidateSize(true));
@@ -573,10 +551,15 @@
 
       layerGroup.addTo(map);
 
-      const res = await fetch(GEOJSON_URL);
-      if (!res.ok) throw new Error("No se pudo cargar " + GEOJSON_URL);
+      const res = await fetch(GEOJSON_URL, { cache: "no-store" });
+      if (!res.ok) throw new Error(`No se pudo cargar ${GEOJSON_URL} (${res.status})`);
+
       const data = await res.json();
-      allFeatures = (data.type === "FeatureCollection") ? data.features : [];
+      if (!data || data.type !== "FeatureCollection" || !Array.isArray(data.features)){
+        throw new Error("El GeoJSON cargó, pero no es un FeatureCollection válido.");
+      }
+
+      allFeatures = data.features;
 
       const provincias = uniqSorted(allFeatures.map(f => (getProp(f,"PROVINCIA") ?? "").toString().trim()).filter(Boolean));
       const cantones   = uniqSorted(allFeatures.map(f => (getProp(f,"CANTON") ?? "").toString().trim()).filter(Boolean));
@@ -624,11 +607,10 @@
 
     window.addEventListener("load", () => {
       init().catch(err=>{
-        alert("Error: " + err.message);
         console.error(err);
+        showDiag(err.message || "Error desconocido.");
       });
     });
   </script>
 </body>
 </html>
-
