@@ -535,7 +535,9 @@ html, body { height: 100%; }
     // =====================
     async function init(){
       map = L.map("map", { zoomControl: true });
-
+setTimeout(() => map.invalidateSize(true), 200);
+window.addEventListener("resize", () => map.invalidateSize(true));
+      
       baseLayer = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         maxZoom: 19,
         attribution: "&copy; OpenStreetMap"
@@ -603,3 +605,4 @@ html, body { height: 100%; }
 </body>
 
 </html>
+
