@@ -5,18 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>250 VIVIENDAS PLANIFICADAS</title>
 
-  <!-- Leaflet -->
-  <link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTR9BMY="
-    crossorigin=""
-  />
-  <script
-    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
-    crossorigin=""
-  ></script>
+  <!-- Leaflet (SIN integrity/crossorigin para evitar bloqueo por SRI en GitHub Pages) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
   <style>
     :root{
@@ -29,14 +20,12 @@
       --radius: 16px;
       --primary:#0b1220;
       --danger:#b91c1c;
-      /* FIX DEFINITIVO: evita que el CSS global “rompa” los tiles de Leaflet */
-.leaflet-container img.leaflet-tile{
-  max-width: none !important;
-  max-height: none !important;
-  width: 256px !important;
-  height: 256px !important;
-}
+    }
 
+    /* FIX: por si algún CSS global afecta imágenes (seguro extra) */
+    .leaflet-container img.leaflet-tile{
+      max-width: none !important;
+      max-height: none !important;
     }
 
     html, body { height: 100%; }
@@ -176,7 +165,7 @@
     .swatch{ width:12px;height:12px;border-radius:50%; border:1px solid rgba(0,0,0,.18); }
     .muted{ color:var(--muted); }
 
-    /* MAP (clave para que no se rompan los tiles) */
+    /* MAP */
     #map{
       height: 100%;
       width: 100%;
@@ -340,7 +329,6 @@
   </div>
 
   <script>
-    // Nombres reales en tu repo (según tu captura)
     const GEOJSON_URL = "./250_BID.geojson";
 
     const PALETTE = [
@@ -527,6 +515,7 @@
         map._hasFitOnce = true;
       }
 
+      // Refrescar tamaño del mapa por seguridad
       requestAnimationFrame(() => map.invalidateSize(true));
       setTimeout(() => map.invalidateSize(true), 250);
     }
@@ -538,7 +527,7 @@
       msg.innerHTML = `<div><b>Motivo:</b> ${message}</div>`;
       code.textContent =
         "Verifica estos nombres en tu repo:\n" +
-        "- index.html (ojo, no index.html1)\n" +
+        "- index.html\n" +
         "- 250_BID.geojson\n" +
         "- logo_institucional.jpg\n\n" +
         "Ruta usada para el GeoJSON:\n" + GEOJSON_URL;
@@ -548,6 +537,7 @@
     async function init(){
       map = L.map("map", { zoomControl: true });
 
+      // Asegura que Leaflet calcule bien tamaños desde el inicio
       requestAnimationFrame(() => map.invalidateSize(true));
       setTimeout(() => map.invalidateSize(true), 300);
       window.addEventListener("resize", () => map.invalidateSize(true));
@@ -579,7 +569,10 @@
       setSelectOptions(document.getElementById("selCanton"), cantones, "(Todos)");
       setSelectOptions(document.getElementById("selGrupo"), grupos, "(Todos)");
 
-      document.getElementById("selProvincia").addEventListener("change", applyFilters);
+      document.getElementById("selProvincia").addEventListener("change", () => {
+        rebuildCantonOptions();
+        applyFilters();
+      });
       document.getElementById("selCanton").addEventListener("change", applyFilters);
       document.getElementById("selGrupo").addEventListener("change", applyFilters);
 
@@ -595,6 +588,7 @@
         document.getElementById("selGrupo").value = "";
         document.getElementById("txtBuscar").value = "";
         clearSelection();
+        rebuildCantonOptions();
         applyFilters();
       });
 
@@ -622,4 +616,3 @@
   </script>
 </body>
 </html>
-
